@@ -13,30 +13,26 @@
 
 #define MIN_WIDTH 30
 #define MIN_HEIGHT 30
-#define CENTER_X 15
-#define CENTER_Y 15
 #define MAX_APPLES 100
 
-#define WORM_SIGN ACS_BLOCK //'+'
+#define WORM_SIGN ACS_BLOCK
 #define APPLE_SIGN '@'
-#define ASSPLOSION_SIGN 'X'
+#define ASSPLOSION_SIGN '.'
 
 typedef struct apple apple;
-struct apple {
+static struct apple {
     int x,y;
     apple *next,*prev;
-};
-static apple apples[MAX_APPLES];
+} apples[MAX_APPLES];
 
 int napples=0;
 
 typedef struct node node;
-struct node {
+static struct node {
     int x,y;
     node *next,*prev;
-};
+} *head,*tail;
 
-node *head,*tail;
 enum direction {
     UP, DOWN, LEFT, RIGHT
 };
@@ -45,10 +41,9 @@ enum direction dir;
 void start()
 {
     node *mato = calloc(1,sizeof(node));
-    mato->x = CENTER_X;
-    mato->y = CENTER_Y;
+    mato->x = COLS/2;
+    mato->y = LINES/2;
     mato->prev = mato->next = NULL;
-    refresh();
     head=tail=mato;
 }
 
@@ -152,6 +147,23 @@ void loopy()
     }
 }
 
+void assplode()
+{
+    node *mato=head;
+    for(int i=0;i<10;i++) {
+        mvaddch(mato->y+i, mato->x+i, ASSPLOSION_SIGN);
+        mvaddch(mato->y-i, mato->x+i, ASSPLOSION_SIGN);
+        mvaddch(mato->y-i, mato->x-i, ASSPLOSION_SIGN);
+        mvaddch(mato->y+i, mato->x-i, ASSPLOSION_SIGN);
+        mvaddch(mato->y+i, mato->x  , ASSPLOSION_SIGN);
+        mvaddch(mato->y-i, mato->x  , ASSPLOSION_SIGN);
+        mvaddch(mato->y  , mato->x+i, ASSPLOSION_SIGN);
+        mvaddch(mato->y  , mato->x-i, ASSPLOSION_SIGN);
+        refresh();
+        usleep(100000);
+    }
+}
+
 int main()
 {
     setlocale(LC_ALL, "");
@@ -183,4 +195,5 @@ int main()
 
     start();
     loopy();
+    assplode();
 }
